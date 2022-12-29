@@ -2,30 +2,34 @@ from selenium import webdriver
 import pandas as pd
 from bs4 import BeautifulSoup
 from time import sleep
+from selenium.webdriver.common.by import By
 
 wd = webdriver.Chrome()
 wd.get('https://shopee.vn/search?keyword=laptop')
-sleep(5)
+sleep(10)
 
 product_list = list()
 SCROLL_PAUSE_TIME = 0.5
 # Get scroll height
 last_height = wd.execute_script("return window.scrollY")
-while True:
-    soup = BeautifulSoup(wd.page_source, "html.parser")
-    product_list.extend([product for product in soup.find_all('div', 
-                                                    attrs={'class': 'col-xs-2-4 shopee-search-item-result__item'})])
-    # Scroll down to bottom
-    wd.execute_script("window.scrollTo(0, window.scrollY + 300)")
+for page_range in range(10):
+    while True:
+        soup = BeautifulSoup(wd.page_source, "html.parser")
+        product_list.extend([product for product in soup.find_all('div', 
+                                                        attrs={'class': 'col-xs-2-4 shopee-search-item-result__item'})])
+        # Scroll down to bottom
+        wd.execute_script("window.scrollTo(0, window.scrollY + 300)")
 
-    # Wait to load page
-    sleep(SCROLL_PAUSE_TIME)
+        # Wait to load page
+        sleep(SCROLL_PAUSE_TIME)
 
-    # Calculate new scroll height and compare with last scroll height
-    new_height = wd.execute_script("return window.scrollY")
-    if new_height == last_height:
-        break
-    last_height = new_height
+        # Calculate new scroll height and compare with last scroll height
+        new_height = wd.execute_script("return window.scrollY")
+        if new_height == last_height:
+            wd.find_element(By.XPATH, "//button[@class='shopee-icon-button shopee-icon-button--right ']").click()
+            sleep(10)
+            break
+        last_height = new_height
 
 product_list = set(product_list)
 
